@@ -1,0 +1,15 @@
+/* styles.css */
+.loading {
+    animation: fadeIn 1s ease-in-out infinite alternate;
+  }
+  
+  body {
+    font-family: 'Inter', sans-serif;
+  }
+  
+
+  @keyframes fadeIn {
+    0% { opacity: 0.5; }
+    100% { opacity: 1; }
+  }
+  
