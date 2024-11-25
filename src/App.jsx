@@ -43,10 +43,12 @@ const App = () => {
             <Route path="blog" element={<Blog />} />
             <Route path="/blog/:blogTitle" element={<BlogPost />} />
             <Route path="gallery" element={<Gallery />} />
+
             {/* Dynamic route for individual event pages */}
             <Route path="gallery/:eventTitle" element={<EventDetail />} />
             <Route path="donation" element={<Donation />} />
             <Route path="*" element={<NotFound />} />
+          
           </Route>
         </Routes>
       </Suspense>
