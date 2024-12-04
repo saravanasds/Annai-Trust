@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Helmet } from 'react-helmet';
-
 import BannerImg from "../assets/slider3.jpg"
+import DonateQr from "../assets/vcard.png"
 
 const Donation = () => {
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
+    mobileNo: '',
     amount: '',
     message: '',
   });
@@ -24,10 +24,12 @@ const Donation = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/api/donations', formData);
-      if (response.status === 200) {
+      const response = await axios.post('https://annai-backend.onrender.com/api/admin/addDonation', formData);
+      if (response.status === 201) {
+        alert('Thank you for your donation!');
         setSuccessMessage('Thank you for your donation!');
-        setFormData({ name: '', email: '', amount: '', message: '' });
+        setFormData({ name: '', mobileNo: '', amount: '', message: '' });
+        window.location.reload();
       }
     } catch (error) {
       setErrorMessage('Something went wrong. Please try again later.');
@@ -49,7 +51,7 @@ const Donation = () => {
     },
     {
       question: 'How can I get a receipt?',
-      answer: 'A donation receipt will be sent to your email after processing your donation.',
+      answer: 'A donation receipt will be sent to your mobileNo after processing your donation.',
     },
   ];
 
@@ -64,17 +66,17 @@ const Donation = () => {
         <meta name="description" content="Support Annai Educational Trust's mission by making a donation." />
       </Helmet>
 
-{/* Banner Section */}
-<div
-  className="bg-blue-600 text-white py-20 text-center bg-cover bg-center relative"
-  style={{ backgroundImage: `url("${BannerImg}")` }}
->
-  <div className="absolute inset-0 bg-black bg-opacity-50"></div>
-  <div className="relative z-10">
-    <h1 className="text-4xl font-bold">Support Our Mission</h1>
-    <p className="mt-4">Your support makes a difference in the lives of many.</p>
-  </div>
-</div>
+      {/* Banner Section */}
+      <div
+        className="bg-blue-600 text-white py-20 text-center bg-cover bg-center relative"
+        style={{ backgroundImage: `url("${BannerImg}")` }}
+      >
+        <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+        <div className="relative z-10">
+          <h1 className="text-4xl font-bold">Support Our Mission</h1>
+          <p className="mt-4">Your support makes a difference in the lives of many.</p>
+        </div>
+      </div>
 
 
       {/* Donation Form Section */}
@@ -95,21 +97,21 @@ const Donation = () => {
                 onChange={handleChange}
                 aria-label="Donor Name"
                 required
-                className="w-full border-gray-300 rounded p-2"
+                className="w-full border border-gray-300 rounded p-2"
               />
             </div>
 
             <div className="mb-4">
-              <label htmlFor="email" className="block font-semibold mb-1">Email</label>
+              <label htmlFor="mobileNo" className="block font-semibold mb-1">Mobile Number</label>
               <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
+                type="text"
+                id="mobileNo"
+                name="mobileNo"
+                value={formData.mobileNo}
                 onChange={handleChange}
-                aria-label="Email Address"
+                aria-label="Mobile Number"
                 required
-                className="w-full border-gray-300 rounded p-2"
+                className="w-full border border-gray-300 rounded p-2"
               />
             </div>
 
@@ -124,7 +126,7 @@ const Donation = () => {
                 aria-label="Donation Amount"
                 required
                 min="1"
-                className="w-full border-gray-300 rounded p-2"
+                className="w-full border border-gray-300 rounded p-2"
               />
             </div>
 
@@ -136,7 +138,7 @@ const Donation = () => {
                 value={formData.message}
                 onChange={handleChange}
                 aria-label="Message"
-                className="w-full border-gray-300 rounded p-2"
+                className="w-full border border-gray-300 rounded p-2"
                 rows="4"
               />
             </div>
@@ -152,16 +154,18 @@ const Donation = () => {
 
         {/* Donation Info Section */}
         <div className="w-full md:w-1/2 bg-gray-100 p-6 rounded-lg shadow-lg">
-          <h3 className="text-2xl font-bold mb-4">Other Ways to Donate</h3>
+          <h3 className="text-2xl text-center font-bold mb-4">Other Ways to Donate</h3>
           <div className="mb-6">
-            <h4 className="font-semibold">Donate via UPI</h4>
-            <img src="/path/to/qr-code.png" alt="UPI QR Code" className="w-32 h-32 mx-auto my-4" />
+            <h4 className="font-semibold text-center">Donate via UPI</h4>
+            <img src={DonateQr} alt="UPI QR Code" className="w-56 h-56 mx-auto my-4" />
           </div>
-          <div className="mb-6">
+          <div className="mb-6 flex flex-col justify-center items-center">
+
             <h4 className="font-semibold">Bank Transfer</h4>
             <p>Bank Name: XYZ Bank</p>
             <p>Account Number: 1234567890</p>
             <p>IFSC Code: XYZB0000123</p>
+
           </div>
           <div className="mt-6">
             <h4 className="font-semibold mb-2">Visit Us</h4>
@@ -189,9 +193,8 @@ const Donation = () => {
             >
               {faq.question}
               <span
-                className={`float-right transform transition-transform ${
-                  activeFAQ === index ? 'rotate-180' : 'rotate-0'
-                }`}
+                className={`float-right transform transition-transform ${activeFAQ === index ? 'rotate-180' : 'rotate-0'
+                  }`}
               >
                 ▼
               </span>

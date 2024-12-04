@@ -1,13 +1,30 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
-import { Link } from 'react-router-dom';
 import Img from "../assets/slider2.jpg";
 import Banner from '../components/Banner';
-import { galleryData } from '../data/galleryData';
-
-const slugify = (title) => title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Gallery = () => {
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate(); // Hook to handle navigation
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await axios.get('https://annai-backend.onrender.com/api/admin/getAllEvents');
+        setEvents(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching events:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
   return (
     <div>
       <Helmet>
@@ -22,26 +39,31 @@ const Gallery = () => {
         currentPage="Gallery"
       />
 
-      <section className="min-h-[50vh] bg-gray-100 py-12">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 px-4">
-          {galleryData.map(item => (
-            <Link to={`/gallery/${slugify(item.title)}`} key={item.id} className="group">
-              <div className="overflow-hidden rounded-lg shadow-md hover:shadow-xl transform hover:scale-105 transition duration-300 ease-in-out">
-                <img
-                  src={item.banner}
-                  alt={item.title}
-                  className="w-full h-56 object-cover group-hover:opacity-80 group-hover:grayscale-0 transition duration-300"
-                  loading="lazy"
-                />
-                <div className="p-4 bg-white">
-                  <h3 className="text-xl font-semibold text-gray-800 truncate">{item.title}</h3>
-                  <p className="text-gray-600 mt-2 line-clamp-2">{item.description}</p>
+
+      {/* Display Events */}
+      <div className="w-[80%] mx-auto p-5 py-10">
+        <h2 className="text-xl font-semibold text-white">Events</h2>
+        {loading ? (
+          <p>Loading events...</p>  // Display a loading message while events are being fetched
+        ) : (
+          <div className="mt-3 grid grid-cols-4 gap-5">
+            {Array.isArray(events) && events.length > 0 ? (
+              events.map((event) => (
+                <div
+                  key={event._id}
+                  className="bg-white p-2 rounded shadow-md cursor-pointer"
+                  onClick={() => navigate(`/eventImages/${event._id}`)} // Navigate to EventImages page
+                >
+                  <img src={event.thumbnail} alt={event.title} className="w-full h-48 object-cover" />
+                  <h3 className="text-lg font-semibold py-2">{event.title}</h3>
                 </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
+              ))
+            ) : (
+              <p>No events found.</p>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

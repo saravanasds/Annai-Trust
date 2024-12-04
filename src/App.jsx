@@ -7,6 +7,7 @@ import 'slick-carousel/slick/slick-theme.css';
 
 import AOS from 'aos';
 import 'aos/dist/aos.css';
+import EventImages from './pages/EventsImages';
 
 // Lazy load each page component
 const Home = React.lazy(() => import('./pages/Home'));
@@ -43,6 +44,7 @@ const App = () => {
             <Route path="blog" element={<Blog />} />
             <Route path="/blog/:blogTitle" element={<BlogPost />} />
             <Route path="gallery" element={<Gallery />} />
+            <Route path="/eventImages/:eventId" element={<EventImages />} />
 
             {/* Dynamic route for individual event pages */}
             <Route path="gallery/:eventTitle" element={<EventDetail />} />

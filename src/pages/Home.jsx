@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import AOS from 'aos';
@@ -7,13 +7,32 @@ import Hero from './HomeComponents/Hero';
 import About from '../assets/slider2.jpg';
 import GetInvolvedSection from "../pages/HomeComponents/GetInvolvedSection"
 import ImpactSection from "../pages/HomeComponents/ImpactSection"
-
 import CountUp from 'react-countup';
 import { FaQuoteLeft, FaQuoteRight } from 'react-icons/fa';
+import axios from 'axios';
+
 
 const Home = () => {
+  const [upComingEvents, setUpComingEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     AOS.init({ duration: 1000, once: true });
+  }, []);
+
+
+  useEffect(() => {
+    const fetchUpComingEvents = async () => {
+      try {
+        const response = await axios.get('https://annai-backend.onrender.com/api/admin/getAllUpComingEvent');
+        setUpComingEvents(response.data);
+      } catch (error) {
+        console.error('Error fetching UpComing Events:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUpComingEvents();
   }, []);
 
   return (
@@ -33,8 +52,8 @@ const Home = () => {
       <Hero />
 
       {/* About Us Section */}
-      <section className="about-us py-16 bg-gray-100" data-aos="fade-up">
-        <div className="container mx-auto">
+      <section className="w-full p-16 bg-gray-100" data-aos="fade-up">
+        <div className="w-full mx-auto">
           <div className="flex flex-col-reverse md:flex-row items-center gap-10">
             <div className="md:w-1/2 w-full" data-aos="zoom-in">
               <img
@@ -103,20 +122,49 @@ const Home = () => {
       </section>
 
       {/* CTA Section */}
-        <GetInvolvedSection />
+      <GetInvolvedSection />
 
 
       {/* Upcoming Events Section */}
       <section className="events py-16 bg-gray-100" data-aos="fade-up">
         <div className="container mx-auto text-center">
           <h2 className="text-3xl font-bold">Upcoming Events</h2>
-          <p className="mt-4 text-lg">Check out our upcoming community and educational events.</p>
+          <p className="my-4 text-lg mb-8">Check out our upcoming community and educational events.</p>
+          {/* Event List */}
+          <div className="w-full py-10 border-t border-gray-500">
+            <div className="w-[80%] mx-auto h-full">
+              {loading ? (
+                <p className="text-center text-gray-500">Loading events...</p>
+              ) : upComingEvents.length === 0 ? (
+                <p className="text-center text-gray-500">No events found.</p>
+              ) : (
+                upComingEvents.map((upComingEvent) => (
+                  <div key={upComingEvent._id} className="w-full flex mb-6 shadow-sm shadow-black rounded-md bg-gray-200">
+
+                    <div className="w-full my-6 px-10 pr-20 text-justify flex justify-between items-center">
+                      <div>
+                        <p className="text-xl font-bold">{upComingEvent.title}</p>
+                        <p className="font-semibold text-gray-500">
+                          {new Date(upComingEvent.date).toLocaleDateString("en-GB")}{" "}
+                          {new Date(upComingEvent.date).toLocaleTimeString("en-US", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </div>
       </section>
 
 
       {/* New Impacts Section */}
-        <ImpactSection />
+      <ImpactSection />
 
       {/* Volunteer Section */}
       <section className="volunteer py-16 bg-gray-600 text-white text-center" data-aos="fade-up">

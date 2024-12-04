@@ -1,17 +1,51 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
-import { Link } from 'react-router-dom';
-import { FaCalendarAlt } from 'react-icons/fa';
 import Banner from '../components/Banner';
-// import Img from "../assets/slider2.jpg";
 import BlogImg from '../assets/slider2.jpg'; // Your blog banner image
-import BlogData from '../data/blogData.js'; // Assuming you have a data file for blog posts
+import axios from 'axios';
 
 // Function to slugify the blog title
 const slugify = (title) =>
   title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
 const Blog = () => {
+  const [blogs, setBlogs] = useState([]);
+  const [upComingEvents, setUpComingEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState({}); // Tracks expanded blogs
+
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        const response = await axios.get('https://annai-backend.onrender.com/api/admin/getAllBlogs');
+        setBlogs(response.data);
+      } catch (error) {
+        console.error('Error fetching blogs:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBlogs();
+  }, []);
+
+  useEffect(() => {
+    const fetchUpComingEvents = async () => {
+      try {
+        const response = await axios.get('https://annai-backend.onrender.com/api/admin/getAllUpComingEvent');
+        setUpComingEvents(response.data);
+      } catch (error) {
+        console.error('Error fetching UpComing Events:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUpComingEvents();
+  }, []);
+
+  const toggleExpand = (id) => {
+    setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
   return (
     <div>
       {/* Helmet for SEO */}
@@ -29,57 +63,85 @@ const Blog = () => {
         currentPage="Blog"
       />
 
-      {/* Blog Content Section */}
-      <section className="bg-gray-100 py-12">
-        <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-3xl font-semibold text-gray-800 mb-8 text-center">Recent Articles</h2>
-
-          <div className="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            {BlogData.map((post, index) => (
-              <div key={index} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition duration-300">
-                <img src={post.image} alt={post.title} className="w-full h-48 object-cover" />
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-gray-800 mb-2">{post.title}</h3>
-                  <p className="text-sm text-gray-500 flex items-center gap-2 mb-4">
-                    <FaCalendarAlt /> {post.date}
+      {/* Blog List */}
+      <div className="w-full my-20">
+        <div className="w-[80%] h-full mx-auto">
+          {loading ? (
+            <p className="text-center text-gray-500">Loading blogs...</p>
+          ) : blogs.length === 0 ? (
+            <p className="text-center text-gray-500">No blogs found.</p>
+          ) : (
+            blogs.map((blog) => (
+              <div key={blog._id} className="w-full flex mb-6 shadow-sm shadow-black rounded-sm bg-gray-100">
+                <div className="w-[30%] p-2">
+                  <img
+                    src={blog.photo}
+                    alt={blog.title}
+                    className="w-[100%] h-72 object-cover border-2 border-white rounded-sm"
+                  />
+                </div>
+                <div className="w-[70%] my-6 px-10 pr-20 text-justify">
+                  <p className="text-xl font-bold">{blog.title}</p>
+                  <p className="font-semibold text-gray-400">
+                    {new Date(blog.date).toLocaleDateString("en-GB")}{" "}
+                    {new Date(blog.date).toLocaleTimeString("en-US", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true,
+                    })}
                   </p>
-                  <p className="text-gray-600 mb-4">{post.excerpt}</p>
-                  <Link
-                    to={`/blog/${slugify(post.title)}`} // Link now uses slugified title
-                    className="text-blue-600 hover:underline font-semibold"
+
+                  <div className={`mt-4 ${expanded[blog._id] ? '' : 'line-clamp-4'}`}>
+                    <p>{blog.content}</p>
+                  </div>
+                  <button
+                    onClick={() => toggleExpand(blog._id)}
+                    className="mt-2 text-blue-500 hover:underline"
                   >
-                    Read More
-                  </Link>
+                    {expanded[blog._id] ? 'Show Less' : 'Read More'}
+                  </button>
                 </div>
               </div>
-            ))}
-          </div>
+            ))
+          )}
         </div>
-      </section>
+      </div>
 
       {/* Upcoming Events Section */}
-      <section className="container mx-auto p-6 bg-gray-200 my-8 rounded-lg">
-        <h2 className="text-2xl font-bold mb-4 text-center">Upcoming Events</h2>
-        <ul className="space-y-4">
-          <li className="bg-white p-4 rounded-lg shadow-md">
-            <h3 className="font-bold">Annual Fundraising Gala</h3>
-            <p className="text-gray-600">
-              Join us for our annual gala to support educational programs on December 1, 2024.
-            </p>
-          </li>
-          <li className="bg-white p-4 rounded-lg shadow-md">
-            <h3 className="font-bold">Free Health Check-up Camp</h3>
-            <p className="text-gray-600">
-              A health camp for students and families on December 10, 2024.
-            </p>
-          </li>
-          <li className="bg-white p-4 rounded-lg shadow-md">
-            <h3 className="font-bold">Skill Development Workshop</h3>
-            <p className="text-gray-600">
-              Enhancing skills for the youth on December 20, 2024.
-            </p>
-          </li>
-        </ul>
+      <section className="events py-16 bg-gray-100" data-aos="fade-up">
+        <div className="container mx-auto text-center">
+          <h2 className="text-3xl font-bold">Upcoming Events</h2>
+          <p className="my-4 text-lg mb-8">Check out our upcoming community and educational events.</p>
+          {/* Event List */}
+          <div className="w-full py-10 border-t border-gray-500">
+            <div className="w-[80%] mx-auto h-full">
+              {loading ? (
+                <p className="text-center text-gray-500">Loading events...</p>
+              ) : upComingEvents.length === 0 ? (
+                <p className="text-center text-gray-500">No events found.</p>
+              ) : (
+                upComingEvents.map((upComingEvent) => (
+                  <div key={upComingEvent._id} className="w-full flex mb-6 shadow-sm shadow-black rounded-md bg-gray-200">
+
+                    <div className="w-full my-6 px-10 pr-20 text-justify flex justify-between items-center">
+                      <div>
+                        <p className="text-xl font-bold">{upComingEvent.title}</p>
+                        <p className="font-semibold text-gray-500">
+                          {new Date(upComingEvent.date).toLocaleDateString("en-GB")}{" "}
+                          {new Date(upComingEvent.date).toLocaleTimeString("en-US", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
       </section>
     </div>
   );

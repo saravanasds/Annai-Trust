@@ -1,12 +1,34 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 import { FaHome } from 'react-icons/fa';
 import Img from '../assets/slider2.jpg';
 import Banner from '../components/Banner';
 import FounderImg from '../assets/founder.png'; // Add the founder's image path
+import axios from 'axios';
+
 
 const About = () => {
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMembers = async () => {
+      try {
+        const response = await axios.get('https://annai-backend.onrender.com/api/admin/getAllMembers');
+        console.log('Members:', response.data);
+        setMembers(response.data);
+      } catch (error) {
+        console.error('Error fetching members:', error);
+      }
+      finally {
+        setLoading(false);
+      }
+    };
+    fetchMembers();
+  }, []);
+
+
   return (
     <div className="bg-gray-50">
       <Helmet>
@@ -77,15 +99,15 @@ const About = () => {
       {/* Our Team Section */}
       <section className="bg-white py-16 px-4">
         <h2 className="text-4xl font-bold text-center text-gray-800 mb-12">Our Team</h2>
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[1, 2, 3].map((member, index) => (
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
+          {members.map((member, index) => (
             <div
               key={index}
               className="text-center bg-gray-100 rounded-lg shadow-md p-6"
             >
-              <div className="w-24 h-24 bg-gray-300 mx-auto rounded-full mb-4"></div>
-              <h3 className="text-xl font-semibold text-gray-700">Team Member {member}</h3>
-              <p className="text-gray-500">Role / Position</p>
+              <img src={member.memberPhoto} className="w-36 h-36 bg-gray-300 mx-auto rounded-full mb-4 object-cover" />
+              <h3 className="text-xl font-semibold text-gray-700">{member.memberName}</h3>
+              <p className="text-gray-500">{member.role}</p>
             </div>
           ))}
         </div>
